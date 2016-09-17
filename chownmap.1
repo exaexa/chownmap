@@ -1,0 +1,56 @@
+.TH chownmap 1 2016-09-17 "chownmap" "chownmap"
+.SH NAME
+.B chownmap
+\- range-based remapper of owner and group IDs of files
+.SH SYNOPSIS
+.B chownmap
+.RI \fIFROM\fR
+.RI \fITO\fR
+.RI \fILENGTH\fR
+.RI [ \fIFILES\fR ... ]
+
+.SH DESCRIPTION
+A shell tool to map file owners accordingly to userns ranges. Handy e.g. for
+easily creating/renumbering unprivileged LXC containers and similar stuff.
+
+\fIFILES\fR (or directories) are processed recursively. Each file owner ID
+(uid) that satisfies
+
+.RS
+\fIFROM\fR <= uid < \fIFROM\fR+\fILENGTH\f
+.RE
+
+is changed to
+
+.RS
+(uid-\fIFROM\fR+\fITO\fR).
+.RE
+
+Group IDs are processed the same way. In result, block of user/group IDs of
+length \fILENGTH\fR that starts at ID \fIFROM\fR is remapped to same-length
+block that starts at ID \fITO\fR.
+
+\fBfind\fR, \fBstat\fR, and \fBchown\fR are run internally to do actual work.
+Extra command line parameters to \fBchown\fR (e.g. \fI-v\fR,
+\fI--preserve-root\fR, ...), are copied from environment variable
+\fICHOWN_EXTRA_OPTS\fR.
+
+.SH RETURN VALUE
+
+If the command-line arguments do not make sense, chownmap exits with 1. In
+other cases, 0 is returned and possible error messages from underlying programs
+are forwarded to user.
+
+.SH EXAMPLE
+
+Convert files while creating and unprivileged container:
+
+.nf
+.sp
+chownmap 0 100000 65536 /var/lib/lxc/thecontainer/rootfs
+.fi
+
+.SH AUTHORS
+
+\fBchownmap\fR wrote itself in mid-2016.
+
