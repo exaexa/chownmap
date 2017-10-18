@@ -27,7 +27,7 @@ CHOWN_EXTRA_OPTS=${CHOWN_EXTRA_OPTS:-}
 CHMOD_EXTRA_OPTS=${CHMOD_EXTRA_OPTS:-}
 
 do_dir () {
-	find "$1" |while read fn ; do
+	find "$1" -print0 |while read -d $'\0' fn ; do
 		stat "$fn" -c"%u %g %a" | {
 			read uid gid mode
 			chuid=$uid
