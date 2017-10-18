@@ -1,8 +1,8 @@
 #!/bin/bash
 
 help_exit () {
-	echo "usage: $0 <from> <to> <length> [ files ] ..."
-	exit $1
+  echo "usage: $0 <from> <to> <length> [ files ] ..."
+  exit $1
 }
 
 FROM="$1"
@@ -27,24 +27,34 @@ CHOWN_EXTRA_OPTS=${CHOWN_EXTRA_OPTS:-}
 CHMOD_EXTRA_OPTS=${CHMOD_EXTRA_OPTS:-}
 
 do_dir () {
-	find "$1" -print0 |while read -d $'\0' fn ; do
-		stat "$fn" -c"%u %g %a" | {
-			read uid gid mode
-			chuid=$uid
-			chgid=$gid
-			[[ $chuid -ge $FROM && $chuid -lt $LAST ]] && chuid=$(( chuid + CHANGE ))
-			[[ $chgid -ge $FROM && $chgid -lt $LAST ]] && chgid=$(( chgid + CHANGE ))
-			if [[ $uid -ne $chuid || $gid -ne $chgid ]] ; then
-				chown $CHOWN_EXTRA_OPTS -h $chuid:$chgid "$fn"
-				#chown may remove bits like suid. Also, symlinks aren't chmod-able
-				[[ $(( 0$mode & 07000 )) -ne 0 && !( -h "$fn" ) ]] && chmod $CHMOD_EXTRA_OPTS $mode "$fn"
-			fi
-		}
-	done
+  find "$1" -print0 |while read -d $'\0' fn ; do
+    stat "$fn" -c"%u %g %a" | {
+      read uid gid mode
+
+      #compute the new uid/gid
+      chuid=$uid
+      chgid=$gid
+      if [[ $chuid -ge $FROM && $chuid -lt $LAST ]] ; then
+        chuid=$(( chuid + CHANGE ))
+      fi
+      if [[ $chgid -ge $FROM && $chgid -lt $LAST ]] ; then
+        chgid=$(( chgid + CHANGE ))
+      fi
+
+      #change if needed
+      if [[ $uid -ne $chuid || $gid -ne $chgid ]] ; then
+        chown $CHOWN_EXTRA_OPTS -h $chuid:$chgid "$fn"
+        #chown may remove bits like suid. Also, symlinks aren't chmod-able
+        if [[ $(( 0$mode & 07000 )) -ne 0 && !( -h "$fn" ) ]] ; then
+          chmod $CHMOD_EXTRA_OPTS $mode "$fn"
+        fi
+      fi
+    }
+  done
 }
 
 while [ -n "$1" ] ; do
-	do_dir "$1"
-	shift
+  do_dir "$1"
+  shift
 done
 
