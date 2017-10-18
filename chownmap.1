@@ -23,17 +23,19 @@ easily creating/renumbering unprivileged LXC containers and similar stuff.
 is changed to
 
 .RS
-(uid-\fIFROM\fR+\fITO\fR).
+\fR(uid-\fIFROM\fR+\fITO\fR).
 .RE
 
 Group IDs are processed the same way. In result, block of user/group IDs of
 length \fILENGTH\fR that starts at ID \fIFROM\fR is remapped to same-length
 block that starts at ID \fITO\fR.
 
-\fBfind\fR, \fBstat\fR, and \fBchown\fR are run internally to do actual work.
-Extra command line parameters to \fBchown\fR (e.g. \fI-v\fR,
+\fBfind\fR, \fBstat\fR, \fBchown\fR and \fBchmod\fR are run internally to do
+actual work. Extra command line parameters to \fBchown\fR (e.g. \fI-v\fR,
 \fI--preserve-root\fR, ...), are copied from environment variable
-\fICHOWN_EXTRA_OPTS\fR.
+\fICHOWN_EXTRA_OPTS\fR, similarly the contents of \fICHMOD_EXTRA_OPTS\fR is fed
+to \fBchmod\fR. \fBchmod\fR is used to fix the permissions after file owner
+change, which e.g. removes setuid/setgid bits.
 
 .SH RETURN VALUE
 
