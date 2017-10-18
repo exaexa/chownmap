@@ -37,7 +37,7 @@ do_dir () {
 			if [[ $uid -ne $chuid || $gid -ne $chgid ]] ; then
 				chown $CHOWN_EXTRA_OPTS -h $chuid:$chgid "$fn"
 				#chown may remove bits like suid. Also, symlinks aren't chmod-able
-				[ -h "$fn" ] || chmod $CHMOD_EXTRA_OPTS $mode "$fn"
+				[[ $(( 0$mode & 07000 )) -ne 0 && !( -h "$fn" ) ]] && chmod $CHMOD_EXTRA_OPTS $mode "$fn"
 			fi
 		}
 	done
